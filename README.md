@@ -3,6 +3,42 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Introduction
+In this project, it was required to apply Model Prdective Control (MPC) in order to complete One Lap in a track provided by Udacity Simulator, handle a 100 milliseconds to mimic a realistic application. The big aim is to tune the Cost Function parameters to maximize the Speed in addition to drive safely within the road bounadries.
+
+## Rubric Points
+
+### The Model
+
+The controller used a simple Kinematic model to model the vehicle. Kinematic models are simplifications of dynamic models that ignore tire forces, gravity, and mass. This simplification reduces the accuracy of the models, but it also makes them more tractable. At low and moderate speeds, kinematic models often approximate the actual vehicle dynamics.
+
+The state vector was represented by 4 variables; Position **(_x,y_)**, heading **(_ψ_)** and velocity **(_v_)**. The simulator provides control over the vehicle's throttle, brake, and stearing. For simplicity, brake and throttle were merged into a single actuation parameter **(_a_)**, in addition to the steering actuation parameter **(_δ_)**.
+
+### Timestep Length and Elapsed Duration (N & dt)
+
+The variable **N** represents the number of descrete steps in the future at which that the controller will predict the state of the vehicle, and the optimal actuations parameters. The variable **dt** represents the time duration for each of these steps. The chosen values for **N** and **dt** of 10 and 0.05 causes the controller to predict 10 steps, each of a 0.5 sec (500 ms) duration. Accordingly, the controller predicts the trajectory of the vehicle during the preceeding 0.5 second in the future. The final values were decided based on different trials, where various combinations of N and dt produced erratic behaviour either due to the heavy processing needed, or not being able to predict far into the future. A 0.5 second prediction was found sufficient for the given track, and 10 steps give the balance between a discrete prediction, and reasonable processing time. Other values tried include 20/0.1, 20/0.05, 10/0.1, and others.
+
+
+### Polynomial Fitting and MPC Preprocessing
+
+After receiving the way points from the simulator, they are transformed to be in the vehicle coordinate frame using the vehicles position and heading provided by the simulator. The points are then fitted to a 3rd order polynomial. The vehicle state is also transformed to the vehicle coordinate frame as well.
+
+
+### Model Predictive Control with Latency
+
+Latency was introduced into the system to simulate delay that could occur as a result of various factors including communication delyas, actuator delays, or ignored vehicle dynamics. In order to design a controller that is robust enough to handle 100 ms latency, the actual state of the vehicle was predicted 500 ms into the future and fed into the controller, which will in turn provide actuation commands that maps to the vehicles future state which will actually be close enough to the present state when the actuation commands are actually executed.
+
+A cost was added to account for every parameter to be optimized. Cost are CTE, EPSI, V, DELTA, A, DELTA_V, D_DELTA, D_A. In addition to the cost parameters mentioned in the lectures, another parameter was added to account for high velocity curves to avoid high lateral forces.
+
+The provided video achieved Maximum Speed around 70 mph. This is considered as the most safe Speed for the car to drive with, based on our MPC Design. The car can drive with a higher Speed, but I prefered to make it 70 mph especially in the following screeshot from the track:
+
+
+  ![alt text](Track_ScreenShot.png "Car Motion ScreenShot in the track")
+
+
+If the Speed increased more than 70 mph, the car becomes on the curbs, so I have prefered achieving Safe more than having higher Speed.
+
+
 ## Dependencies
 
 * cmake >= 3.5
