@@ -3,25 +3,22 @@
 #include <cppad/ipopt/solve.hpp>
 #include "Eigen-3.3/Eigen/Core"
 
-#define V_REF 100
-#define W_CTE 500
-#define W_EPSI 100
-#define W_V 10
-#define W_DELTA 200
-#define W_A 20
-#define W_DELTA_V 350
-#define W_D_DELTA 1
-#define W_D_A 1
+#define V_REF 60
+// #define W_CTE 500
+// #define W_EPSI 100
+// #define W_V 10
+// #define W_DELTA 200
+// #define W_A 20
+// #define W_DELTA_V 350
+// #define W_D_DELTA 1
+// #define W_D_A 1
 
 using CppAD::AD;
 
-// For converting back and forth between radians and degrees.
-double deg2rad_(double x) { return x * M_PI / 180; }
-double rad2deg_(double x) { return x * 180 / M_PI; }
 
 // TODO: Set the timestep length and duration
-size_t N = 10;
-double dt = 0.1;
+size_t N = 20;
+double dt = 0.05;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -65,21 +62,22 @@ class FG_eval {
 
     for (t = 0; t < N; t++)
     {
-      fg[0] += W_CTE  * CppAD::pow(vars[cte_start + t], 2);
-      fg[0] += W_EPSI * CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += W_V    * CppAD::pow(vars[v_start + t] - V_REF, 2);
+      fg[0] += CppAD::pow(vars[cte_start + t], 2);  // W_CTE  * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += CppAD::pow(vars[epsi_start + t], 2); // W_EPSI * CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += CppAD::pow(vars[v_start + t] - V_REF, 2); // W_V    * CppAD::pow(vars[v_start + t] - V_REF, 2);
     }
 
     for (t = 0; t < N-1; t++)
     {
-      fg[0] += W_DELTA * CppAD::pow(vars[delta_start + t], 2);
-      fg[0] += W_A     * CppAD::pow(vars[a_start + t], 2);
+      fg[0] += CppAD::pow(vars[delta_start + t], 2); // W_DELTA    * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += CppAD::pow(vars[a_start + t], 2); // W_A        * CppAD::pow(vars[a_start + t], 2);
+      fg[0] += CppAD::pow(vars[delta_start + t] * vars[v_start+t], 2); // W_DELTA_V  * CppAD::pow(vars[delta_start + t] * vars[v_start+t], 2);
     }
 
     for (t = 0; t < N-2; t++)
     {
-      fg[0] += W_D_DELTA *  CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += W_D_A     *  CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2); // W_D_DELTA *  CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2); // W_D_A     *  CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
 
@@ -194,8 +192,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // Steering Angle Lower and Upper bounds from -25 to +25
   for (i = delta_start; i < a_start; i++)
   {
-      vars_lowerbound[i] = deg2rad_(-25.0);
-      vars_upperbound[i] = deg2rad_(25.0);
+      vars_lowerbound[i] = -0.436332;
+      vars_upperbound[i] =  0.436332;
   }
 
   // Accelertaion and Deceleration Lower and Upper bounds from -1 to +1
